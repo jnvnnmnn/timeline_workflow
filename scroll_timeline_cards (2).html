@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Organische Scroll Timeline mit GSAP</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Timeline</title>
   <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@600&family=Azaret+Mono&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: transparent;
-      padding: 0;
+      background: #111;
+      font-family: 'Work Sans', sans-serif;
+      color: #fff;
       overflow-x: hidden;
     }
-
     .timeline-container {
       position: relative;
       max-width: 1000px;
@@ -21,200 +20,193 @@
       padding: 100px 20px;
       min-height: 6600px;
     }
-
-    .timeline-path {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 1;
-    }
-
-    .timeline-step {
-      position: relative;
-      display: flex;
-      align-items: flex-start;
-      margin: 300px 0;
-      z-index: 2;
-    }
-
-    .timeline-step .card {
-      background: rgba(25, 25, 25, 0.8);
-      backdrop-filter: blur(12px) saturate(160%);
-      border-radius: 20px;
-      padding: 24px 28px;
-      width: 100%;
-      max-width: 400px;
-      border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-      opacity: 0;
-      transform: scale(1);
-      transition: all 0.4s ease;
-      cursor: pointer;
-    }
-
-    .timeline-step:nth-child(odd) .card {
-      margin-left: 120px;
-    }
-
-    .timeline-step:nth-child(even) .card {
-      margin-left: auto;
-      margin-right: 120px;
-    }
-
-    .timeline-step .card:hover {
-      transform: scale(1.03);
-      box-shadow: 0 20px 60px rgba(255, 78, 39, 0.2);
-      border-color: rgba(255,255,255,0.3);
-    }
-
-    .dot {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background-color: #FF4E27;
-      border-radius: 50%;
-      box-shadow: 0 0 12px rgba(255, 78, 39, 0.6);
-      z-index: 5;
-      transform: translate(-50%, -50%);
-    }
-
-    .overlay {
+    .timeline-svg {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      backdrop-filter: blur(12px);
-      background: rgba(0, 0, 0, 0.4);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .timeline-path {
+      fill: none;
+      stroke: url(#gradientStroke);
+      stroke-width: 3;
+      stroke-dasharray: 10000;
+      stroke-dashoffset: 10000;
+    }
+    .dot {
+      fill: #ff4e27;
+      filter: drop-shadow(0 0 12px #ff4e27aa);
+    }
+    .timeline-step {
+      position: relative;
+      margin: 280px 0;
+      z-index: 2;
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    .card {
+      max-width: 400px;
+      background: rgba(25, 25, 25, 0.8);
+      backdrop-filter: blur(12px) saturate(160%);
+      border-radius: 20px;
+      padding: 24px 28px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      transition: all 0.4s ease;
+      cursor: pointer;
+    }
+    .timeline-step:nth-child(odd) .card {
+      margin-left: 120px;
+    }
+    .timeline-step:nth-child(even) .card {
+      margin-left: auto;
+      margin-right: 120px;
+    }
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 40px rgba(255, 78, 39, 0.6);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    .card h3 {
+      text-transform: uppercase;
+      font-size: 32px;
+      margin-bottom: 12px;
+      word-break: break-word;
+      line-height: 1.3;
+    }
+    .card p {
+      font-family: 'Azaret Mono', monospace;
+      font-size: 12px;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      backdrop-filter: blur(14px);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 10;
-      display: flex;
-      align-items: center;
+      display: none;
       justify-content: center;
+      align-items: center;
       padding: 40px;
     }
-
-    .overlay .card {
+    .overlay-card {
+      background: rgba(30, 30, 30, 0.95);
+      border: 2px solid #ff4e27;
+      padding: 40px;
+      border-radius: 20px;
       max-width: 800px;
       width: 100%;
       font-family: 'Azaret Mono', monospace;
       font-size: 12px;
-      background: rgba(30, 30, 30, 0.85);
-      color: #eee;
-      border: 2px solid #FF4E27;
-      border-radius: 20px;
-      padding: 32px;
-      box-shadow: 0 0 40px rgba(255, 78, 39, 0.3);
-    }
-
-    .final-effect {
-      animation: pulseFinal 2s infinite ease-in-out;
-      border-color: #FF4E27 !important;
-    }
-
-    @keyframes pulseFinal {
-      0% { box-shadow: 0 0 0 rgba(255,78,39, 0.4); }
-      50% { box-shadow: 0 0 30px rgba(255,78,39, 0.6); }
-      100% { box-shadow: 0 0 0 rgba(255,78,39, 0.4); }
+      box-shadow: 0 0 40px rgba(255, 78, 39, 0.6);
     }
   </style>
 </head>
 <body>
-  <div class="timeline-container">
-    <svg class="timeline-path" height="6600" viewBox="0 0 1400 6600" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="gradientStroke" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#FF4E27" />
-          <stop offset="100%" stop-color="#ffffff11" />
-        </linearGradient>
-      </defs>
-      <path id="animatedPath" d="M300,0 C300,300 1100,300 1100,600 C1100,900 300,900 300,1200 C300,1500 1100,1500 1100,1800 C1100,2100 300,2100 300,2400 C300,2700 1100,2700 1100,3000 C1100,3300 300,3300 300,3600 C300,3900 1100,3900 1100,4200 C1100,4500 300,4500 300,4800 C300,5100 1100,5100 1100,5400 C1100,5700 300,5700 300,6000 C300,6300 1100,6300 1100,6600" stroke="url(#gradientStroke)" stroke-width="2" fill="none" stroke-dasharray="10000" stroke-dashoffset="10000" />
-    </svg>
+<div class="timeline-container" id="timelineSteps"></div>
 
-    <div id="timeline-steps"></div>
-    <div id="dotFollower" class="dot"></div>
-    <div id="overlay" class="overlay" style="display: none;"></div>
-  </div>
+<svg class="timeline-svg" viewBox="0 0 1400 6600">
+  <defs>
+    <linearGradient id="gradientStroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF4E27"/>
+      <stop offset="100%" stop-color="#ffffff11"/>
+    </linearGradient>
+  </defs>
+  <path id="path" class="timeline-path" d="M300,0 C300,300 1100,300 1100,600 C1100,900 300,900 300,1200 C300,1500 1100,1500 1100,1800 C1100,2100 300,2100 300,2400 C300,2700 1100,2700 1100,3000 C1100,3300 300,3300 300,3600 C300,3900 1100,3900 1100,4200 C1100,4500 300,4500 300,4800 C300,5100 1100,5100 1100,5400 C1100,5700 300,5700 300,6000 C300,6300 1100,6300 1100,6600"/>
+  <circle id="dot" class="dot" r="12" cx="300" cy="0"/>
+</svg>
 
-  <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
-  <script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
-  <script src="https://unpkg.com/gsap@3/dist/MotionPathPlugin.min.js"></script>
-  <script>
-    const path = document.querySelector("#animatedPath");
-    const dot = document.querySelector("#dotFollower");
-    const stepsContainer = document.getElementById("timeline-steps");
-    const overlay = document.getElementById("overlay");
+<div id="overlay" class="overlay"><div class="overlay-card" id="overlayContent"></div></div>
 
-    const steps = 12;
-    for (let i = 1; i <= steps; i++) {
-      const step = document.createElement("div");
-      step.className = "timeline-step";
-      step.innerHTML = `
-        <div class="card" data-title="Station ${i}" data-content="Dies ist ein längerer Textinhalt für Station ${i}. Hier könnten zusätzliche Informationen, Bilder oder interaktive Elemente stehen.">
-          <h3>$1</h3><style>h3 { text-transform: uppercase; font-family: 'Work Sans', sans-serif; font-weight: 600; font-size: 42px; }</style>
-          <p>Klicke für mehr Details …</p>
-        </div>
-      `;
-      stepsContainer.appendChild(step);
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+<script>
+  const path = document.querySelector('#path');
+  const dot = document.querySelector('#dot');
+  const stepsContainer = document.getElementById('timelineSteps');
+  const overlay = document.getElementById('overlay');
+  const overlayContent = document.getElementById('overlayContent');
+
+  const stations = [
+    { title: 'Bauherrenanfrage', content: 'Erste Kontaktaufnahme und Klärung der Grundvoraussetzungen.' },
+    { title: 'Erstgespräch', content: 'Persönliches Kennenlernen und Vorstellung erster Ideen.' },
+    { title: 'Planungsauftrag', content: 'Erteilung des Auftrags zur Erstellung einer ersten Entwurfsplanung.' },
+    { title: 'Entwurfsphase', content: 'Erarbeitung von Grundrissvarianten und Visualisierungen.' },
+    { title: 'Kostenabschätzung', content: 'Ermittlung einer groben Kostenschätzung auf Basis der Entwurfsplanung.' },
+    { title: 'Anpassung und Optimierung', content: 'Überarbeitung der Planung nach Kundenfeedback.' },
+    { title: 'Vorplanung', content: 'Ausarbeitung der genehmigungsfähigen Unterlagen.' },
+    { title: 'Bauherrenfreigabe', content: 'Freigabe der Unterlagen zur finalen Antragstellung.' },
+    { title: 'Bauantragsplanung', content: 'Erstellung und Einreichung des Bauantrags bei der Behörde.' }
+  ];
+
+  stations.forEach(station => {
+    const step = document.createElement('div');
+    step.classList.add('timeline-step');
+    step.innerHTML = `
+      <div class="card" data-title="${station.title}" data-content="${station.content}">
+        <h3>${station.title}</h3>
+        <p>Klicke für mehr Details …</p>
+      </div>
+    `;
+    stepsContainer.appendChild(step);
+  });
+
+  gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
+
+  gsap.to("#path", {
+    strokeDashoffset: 0,
+    scrollTrigger: {
+      trigger: ".timeline-container",
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 0.6
     }
+  });
 
-    gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
+  gsap.to(dot, {
+    scrollTrigger: {
+      trigger: ".timeline-container",
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 0.6
+    },
+    motionPath: {
+      path: "#path",
+      align: "#path",
+      autoRotate: false,
+      alignOrigin: [0.5, 0.5]
+    }
+  });
 
-    gsap.to("#animatedPath", {
+  gsap.utils.toArray('.timeline-step').forEach(step => {
+    gsap.to(step, {
       scrollTrigger: {
-        trigger: ".timeline-container",
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 0.6
+        trigger: step,
+        start: 'top 80%',
+        toggleActions: 'play none none reverse'
       },
-      strokeDashoffset: 0
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      ease: 'power2.out'
     });
+  });
 
-    gsap.to(dot, {
-      scrollTrigger: {
-        trigger: ".timeline-container",
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 0.3
-      },
-      motionPath: {
-        path: path,
-        align: path,
-        autoRotate: false,
-        alignOrigin: [0.5, 0.5]
-      }
-    });
+  stepsContainer.addEventListener('click', e => {
+    const card = e.target.closest('.card');
+    if (!card) return;
+    overlayContent.innerHTML = `<h2>${card.dataset.title}</h2><p>${card.dataset.content}</p>`;
+    overlay.style.display = 'flex';
+  });
 
-    gsap.utils.toArray(".timeline-step").forEach((step, index) => {
-      const card = step.querySelector(".card");
-      gsap.fromTo(card, {
-        opacity: 0,
-        y: 50
-      }, {
-        opacity: 1,
-        y: 0,
-        scrollTrigger: {
-          trigger: step,
-          start: "top 85%",
-          toggleActions: "play none none reverse"
-        },
-        duration: 0.6,
-        ease: "power3.out"
-      });
-
-      card.addEventListener("click", () => {
-        overlay.innerHTML = `<div class='card'><h2>${card.dataset.title}</h2><p>${card.dataset.content}</p></div>`;
-        overlay.style.display = "flex";
-      });
-
-      if (index === steps - 1) {
-        card.classList.add("final-effect");
-      }
-    });
-
-    overlay.addEventListener("click", () => {
-      overlay.style.display = "none";
-    });
-  </script>
+  overlay.addEventListener('click', () => overlay.style.display = 'none');
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') overlay.style.display = 'none';
+  });
+</script>
 </body>
 </html>
