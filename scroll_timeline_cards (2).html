@@ -72,7 +72,31 @@ html::-webkit-scrollbar,
 .timeline-container::-webkit-scrollbar {
   display: none;
 }
-  </style>
+  @media (max-width: 600px) {
+  .card-step {
+    min-width: 96vw;
+    max-width: 98vw;
+    left: 50vw !important;
+    padding: 0 !important;
+  }
+  .card {
+    padding: 14px 5vw 18px 5vw;
+    border-radius: 16px;
+    font-size: 16px;
+  }
+  .overlay .content {
+    max-width: 97vw;
+    padding: 22px 8px 16px 8px;
+    font-size: 15.5px;
+    border-radius: 14px;
+  }
+  .overlay .content h2 {
+    font-size: 19px;
+    margin-bottom: 10px;
+  }
+}
+$1
+</style>
 </head>
 <body>
   <div class="timeline-container" id="container">
@@ -94,16 +118,43 @@ html::-webkit-scrollbar,
     gsap.registerPlugin(ScrollTrigger);
 
     const stations = [
-      { title:'Bauherrenanfrage', content:'Erste Kontaktaufnahme und Klärung der Grundvoraussetzungen.' },
-      { title:'Erstgespräch', content:'Persönliches Kennenlernen und Vorstellung erster Ideen.' },
-      { title:'Planungsauftrag', content:'Erteilung des Auftrags zur Erstellung einer ersten Entwurfsplanung.' },
-      { title:'Entwurfsphase', content:'Erarbeitung von Grundrissvarianten und Visualisierungen.' },
-      { title:'Kostenabschätzung', content:'Grobe Kostenschätzung.' },
-      { title:'Bauantrag', content:'Erstellung und Einreichung aller relevanten Unterlagen für die Baugenehmigung.' },
-      { title:'Ausführungsplanung', content:'Detaillierte Planung aller Bauausführungen und Abstimmung mit den Gewerken.' },
-      { title:'Vergabe', content:'Einholung und Auswertung der Angebote, Auswahl der Unternehmen.' },
-      { title:'Bauausführung', content:'Umsetzung des Bauvorhabens bis zur Fertigstellung und Übergabe.' }
-    ];
+  {
+    title: "Bauherrenanfrage",
+    content: `Die Anfrage durch die Bauherren wird meist telefonisch, per E-Mail oder über das Kontaktformular auf der Website gestellt. Sie dient als Kommunikationsinstrument für die erste Kontaktaufnahme und ermöglicht es, die Grundvoraussetzungen sowie Wünsche und Vorstellungen zu erfragen.`
+  },
+  {
+    title: "Dialog mit den Bauherren",
+    content: `Im direkten Austausch werden die individuellen Wünsche, Anforderungen und Vorstellungen an das Bauvorhaben detailliert besprochen. Hierzu gehören z. B. funktionale Aspekte, Raumprogramme, Budgetrahmen sowie die gewünschte Architektur- und Materialität.`
+  },
+  {
+    title: "Erstellung eines Raumprogrammes",
+    content: `Das Raumprogramm bildet die Grundlage für die spätere Planung. Es wird gemeinsam mit den Bauherren erstellt und dient als Leitfaden für die Gestaltung und Aufteilung des Gebäudes sowie der jeweiligen Räume, deren Größen, Verknüpfungen und speziellen Anforderungen.`
+  },
+  {
+    title: "Ideenaustausch & Konzeptskizzen",
+    content: `Erste Skizzen, Visualisierungen und Entwurfsideen werden entwickelt und mit den Bauherren diskutiert. Ziel ist es, kreative Lösungen zu finden und eine gestalterische Richtung festzulegen.`
+  },
+  {
+    title: "Erste Kostenschätzung",
+    content: `Eine grobe Kostenschätzung basierend auf dem Raumprogramm und den ersten Entwurfsideen gibt den Bauherren eine Orientierung über den zu erwartenden finanziellen Aufwand. Diese Schätzung wird im weiteren Verlauf kontinuierlich präzisiert.`
+  },
+  {
+    title: "Entwurfsphase",
+    content: `Auf Grundlage des abgestimmten Raumprogramms und der ersten Ideen wird ein vollständiger Entwurfsplan erstellt. Dazu gehören Grundrisse, Schnitte, Ansichten sowie aussagekräftige Visualisierungen. Varianten werden vorgestellt und im Dialog mit den Bauherren optimiert.`
+  },
+  {
+    title: "Interiordesign",
+    content: `Neben der äußeren Gestaltung des Gebäudes wird in enger Abstimmung mit den Bauherren das Innendesign geplant. Materialien, Farben, Beleuchtungskonzepte und Möblierungsvarianten werden in Moodboards und 3D-Visualisierungen präsentiert.`
+  },
+  {
+    title: "Angebotsanfrage der Netzwerkpartner",
+    content: `Erste Angebote werden bei ausgewählten Fachplanern, Handwerksbetrieben oder ausführenden Unternehmen eingeholt. So können Kosten weiter konkretisiert und zuverlässige Partner für die Umsetzung gefunden werden.`
+  },
+  {
+    title: "Bauantragsplanung",
+    content: `Alle relevanten Unterlagen für den Bauantrag – Pläne, Berechnungen, Beschreibungen – werden erstellt und eingereicht. Im Austausch mit Behörden werden eventuelle Rückfragen geklärt, um die Genehmigung möglichst zügig zu erhalten.`
+  }
+];
 
     const container = document.getElementById('container');
     const svg = document.getElementById('timelineSvg');
