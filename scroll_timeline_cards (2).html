@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Timeline GSAP Cards</title>
-  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@600&family=Azaret+Mono&display=swap" rel="stylesheet" />
+  <title>Kai Steppan Workflow Timeline</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600&family=Azaret+Mono:wght@300;400&display=swap" rel="stylesheet" />
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
       font-family: 'Work Sans', sans-serif;
-      background: transparent;
+      background: #0a0a0a;
       color: #fff;
       overflow: hidden;
     }
@@ -23,6 +23,7 @@
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
       -ms-overflow-style: none;
+      scroll-behavior: smooth;
     }
 
     .scroll-wrapper::-webkit-scrollbar {
@@ -32,7 +33,7 @@
     .timeline-container {
       position: relative;
       width: 100vw;
-      min-height: 400vh;
+      min-height: 600vh;
     }
 
     .timeline-svg {
@@ -48,77 +49,188 @@
     path {
       fill: none;
       stroke: url(#gradientStroke);
-      stroke-width: 3.5;
+      stroke-width: 4;
     }
 
     circle.dot {
       fill: #ff4e27;
-      filter: drop-shadow(0 0 10px #ff4e27bb);
+      filter: drop-shadow(0 0 15px #ff4e27bb);
     }
 
     .card-step {
       position: absolute;
-      min-width: 260px;
-      max-width: 340px;
+      min-width: 280px;
+      max-width: 380px;
       opacity: 0;
       pointer-events: auto;
       z-index: 3;
-      transition: box-shadow 0.3s, opacity 0.3s;
       will-change: transform, opacity;
       cursor: pointer;
+      transform: translate(-50%, 0);
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card-step.expanded {
+      min-width: min(90vw, 800px);
+      max-width: min(90vw, 800px);
+      z-index: 10;
       transform: translate(-50%, 0);
     }
 
     .card {
-      background: rgba(30, 30, 30, 0.94);
-      border: 1.5px solid #ff4e27aa;
-      border-radius: 18px;
-      padding: 20px 24px;
-      box-shadow: 0 4px 48px #0008;
-      backdrop-filter: blur(14px) saturate(120%);
-      transition: box-shadow 0.2s;
+      background: rgba(15, 15, 20, 0.95);
+      border: 2px solid #ff4e27aa;
+      border-radius: 20px;
+      padding: 24px 28px;
+      box-shadow: 0 8px 64px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(20px) saturate(140%);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
     }
 
     .card:hover {
-      box-shadow: 0 2px 36px #ff4e27cc;
+      box-shadow: 0 12px 80px rgba(255, 78, 39, 0.3);
+      border-color: #ff4e27;
+    }
+
+    .card.expanded {
+      box-shadow: 0 20px 100px rgba(255, 78, 39, 0.4);
+      border-color: #ff4e27;
+      background: rgba(15, 15, 20, 0.98);
     }
 
     .card h3 {
-      font-size: 22px;
-      margin: 0 0 10px;
+      font-size: clamp(20px, 4vw, 26px);
+      margin: 0 0 16px;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+      color: #ff4e27;
     }
 
-    .card p {
-      font-size: 13px;
+    .card-preview {
+      font-size: clamp(12px, 2.5vw, 14px);
       font-family: 'Azaret Mono', monospace;
       margin: 0;
+      line-height: 1.5;
+      color: #e0e0e0;
+      font-weight: 300;
     }
 
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.4);
+    .card-expanded-content {
       display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 99;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #333;
+      animation: fadeInUp 0.6s ease-out;
     }
 
-    .overlay .content {
-      background: rgba(30, 30, 34, 0.9);
-      padding: 30px;
-      border-radius: 16px;
-      max-width: 480px;
-      width: 90%;
-      box-shadow: 0 8px 60px rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(20px);
+    .card-expanded-content.show {
+      display: block;
     }
 
-    .overlay .content h2 {
-      margin-top: 0;
-      margin-bottom: 12px;
+    .card-expanded-content p {
+      font-size: clamp(13px, 2.8vw, 16px);
+      line-height: 1.7;
+      margin-bottom: 20px;
+      color: #d0d0d0;
+      font-weight: 400;
+    }
+
+    .card-expanded-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    .expand-hint {
+      position: absolute;
+      bottom: 12px;
+      right: 16px;
+      font-size: 11px;
+      color: #ff4e27;
+      font-family: 'Azaret Mono', monospace;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+
+    .card.expanded .expand-hint {
+      opacity: 0;
+    }
+
+    .close-hint {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      font-size: 24px;
+      color: #ff4e27;
+      opacity: 0;
+      transition: opacity 0.3s;
+      cursor: pointer;
+    }
+
+    .card.expanded .close-hint {
+      opacity: 0.8;
+    }
+
+    .close-hint:hover {
+      opacity: 1 !important;
+    }
+
+
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .card-step {
+        min-width: 90vw;
+        max-width: 90vw;
+      }
+      
+      .card {
+        padding: 20px 22px;
+      }
+
+      .card h3 {
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+
+      .card-preview {
+        font-size: 12px;
+      }
+
+      .timeline-container {
+        min-height: 700vh;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card-step {
+        min-width: 95vw;
+        max-width: 95vw;
+      }
+
+      .card {
+        padding: 16px 18px;
+      }
+
+      .card h3 {
+        font-size: 16px;
+      }
+
+      .card-preview {
+        font-size: 11px;
+      }
     }
   </style>
 </head>
@@ -129,17 +241,14 @@
         <defs>
           <linearGradient id="gradientStroke" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="#FF4E27" />
-            <stop offset="100%" stop-color="#ffffff11" />
+            <stop offset="50%" stop-color="#FF6B47" />
+            <stop offset="100%" stop-color="#ffffff22" />
           </linearGradient>
         </defs>
         <path id="path"></path>
-        <circle class="dot" id="dot" r="10"></circle>
+        <circle class="dot" id="dot" r="12"></circle>
       </svg>
     </div>
-  </div>
-
-  <div class="overlay" id="overlay">
-    <div class="content" id="overlayContent"></div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -152,31 +261,77 @@
     const svg = document.getElementById('timelineSvg');
     const pathEl = document.getElementById('path');
     const dot = document.getElementById('dot');
-    const overlay = document.getElementById('overlay');
-    const overlayContent = document.getElementById('overlayContent');
 
     const content = [
-      "Beschreibung zu Schritt 1",
-      "Beschreibung zu Schritt 2",
-      "Beschreibung zu Schritt 3",
-      "Beschreibung zu Schritt 4",
-      "Beschreibung zu Schritt 5",
-      "Beschreibung zu Schritt 6",
-      "Beschreibung zu Schritt 7",
-      "Beschreibung zu Schritt 8",
-      "Beschreibung zu Schritt 9"
+      {
+        title: "Bauherrenanfrage",
+        preview: "Der erste Schritt zur Verwirklichung Ihrer Architekturträume - von der ersten Idee bis zur konkreten Anfrage.",
+        expanded: "In der Anfrage durch die Bauherren werden oft spezifische Fragen gestellt, um Klarheit über bestimmte Aspekte des Projekts zu erhalten. Dies können Fragen zu den Bauvorschriften, den benötigten Materialien, dem Zeitplan oder den Kosten sein. Der Zweck dieser Anfrage besteht darin, Informationen zu sammeln, um fundierte Entscheidungen treffen zu können und den Bau reibungslos durchzuführen.\n\nDie Anfrage durch die Bauherren dient als Kommunikationsinstrument, um sicherzustellen, dass alle beteiligten Parteien auf dem gleichen Stand sind und die Anforderungen und Erwartungen der Bauherren erfüllen können. Sie ermöglicht eine klare und effiziente Kommunikation zwischen den Bauherren und den Fachleuten, um den Erfolg des Bauprojekts zu gewährleisten."
+      },
+      {
+        title: "Dialog mit den Bauherren",
+        preview: "Intensive Beratung und Kommunikation zwischen allen Beteiligten für eine erfolgreiche Projektentwicklung.",
+        expanded: "Im Dialog mit den Bauherren werden wichtige Informationen ausgetauscht, Fragen gestellt und beantwortet sowie Entscheidungen getroffen. Der Bauherr hat die Möglichkeit, seine Vorstellungen, Anforderungen und Erwartungen hinsichtlich des Bauvorhabens zu kommunizieren. Dies umfasst sowohl ästhetische Präferenzen als auch funktionale Anforderungen. Gleichzeitig erstellen wir Ihnen ein Angebot über unsere Planungsleistungen sowie der Inhalte.\n\nGleichzeitig bieten die Fachleute im Dialog mit den Bauherren ihre Expertise an und beraten ihn in Bezug auf technische Aspekte, Kosten, Zeitplan und etwaige rechtliche Vorgaben. Sie können den Bauherren helfen, realistische Ziele zu setzen und die bestmöglichen Lösungen für sein Bauvorhaben zu finden.\n\nEin effektiver Dialog mit den Bauherren beinhaltet regelmäßige Treffen, bei denen der Fortschritt des Projekts besprochen wird. Dabei werden Fragen geklärt, Herausforderungen identifiziert und Lösungen erarbeitet. Die offene Kommunikation zwischen allen Beteiligten trägt dazu bei, mögliche Missverständnisse zu vermeiden und sicherzustellen, dass das Bauvorhaben den Erwartungen der Bauherren entspricht."
+      },
+      {
+        title: "Erstellung eines Raumprogrammes",
+        preview: "Systematische Analyse und Planung aller räumlichen Anforderungen als Grundlage für den Entwurfsprozess.",
+        expanded: "Das Raumprogramm dient als Leitfaden, um die Gestaltung und Aufteilung des Gebäudes zu planen. Es hilft dabei, den Raum optimal zu nutzen, die richtige Anzahl von Räumen bereitzustellen und sicherzustellen, dass die Funktionen und Bedürfnisse der Bewohner erfüllt werden.\n\nZu Beginn werden umfangreiche Analysen und Auswertungen durchgeführt, um die Bedürfnisse und Anforderungen des Bauvorhabens zu verstehen. Dazu gehören beispielsweise die Anzahl der Bewohner, die Art der Nutzung, die Funktionen des Gebäudes sowie spezifische Anforderungen wie Barrierefreiheit, Energieeffizienz oder Sicherheit.\n\nDie Auswertungen beinhalten auch die Analyse der Grundstücksgröße, des Baubudgets und der rechtlichen Vorgaben. Zusätzlich werden Aspekte wie Flexibilität für zukünftige Anpassungen, optimale Flächennutzung und Workflow-Optimierung berücksichtigt. Das Raumprogramm dient als Basis für den gesamten Entwurfsprozess."
+      },
+      {
+        title: "Ideenaustausch",
+        preview: "Ihr Projekt im Fokus - detaillierte Besprechungen und kreative Lösungsfindung für optimale Ergebnisse.",
+        expanded: "Das persönliche Gespräch bietet eine wertvolle Gelegenheit, um das Bauprojekt im Detail zu besprechen und sicherzustellen, dass die Bauherren ein klares Verständnis von den geplanten Arbeiten hat. Es ermöglicht auch einen direkten Austausch zwischen den Bauherren und den Fachleuten, um mögliche Herausforderungen oder Verbesserungsmöglichkeiten zu identifizieren.\n\nWährend des Gesprächs können Änderungen oder Anpassungen an den Unterlagen vorgeschlagen werden, um den Vorstellungen und Bedürfnissen der Bauherren gerecht zu werden. Es ist wichtig, dass alle Beteiligten ihre Perspektiven einbringen und gemeinsam nach optimalen Lösungen suchen.\n\nDurch das persönliche Gespräch wird eine klare Kommunikation gefördert und Missverständnisse können vermieden werden. Es ermöglicht auch eine engere Zusammenarbeit und besseres Verständnis zwischen den Bauherren und den Fachleuten, was wiederum dazu beiträgt, dass das Bauprojekt den Erwartungen der Bauherren entspricht."
+      },
+      {
+        title: "Erste Kostenschätzung",
+        preview: "Professionelle Budgetplanung durch erfahrene Netzwerkpartner für realistische Kosteneinschätzung.",
+        expanded: "Informationen werden an Netzwerkpartner wie Bauunternehmer, Lieferanten oder Subunternehmer weitergeleitet. Diese Fachleute haben umfangreiche Erfahrung in ihren jeweiligen Bereichen und können eine erste Einschätzung der Kosten für das Bauprojekt abgeben.\n\nDie Netzwerkpartner nutzen ihre Fachkenntnisse, um eine grobe Schätzung der Materialkosten, Arbeitskosten und anderen projektbezogenen Kosten abzugeben. Sie berücksichtigen dabei Faktoren wie die Projektgröße, das Grundstück, sowie die gewünschten Qualitätsstandards und die Art des Bauvorhabens sowie die regionalen Marktbedingungen.\n\nDie Baunebenkosten sind ein entscheidender, jedoch oft unterschätzter Faktor bei Bauprojekten. Diese vielfältigen Ausgaben jenseits der reinen Baukosten können erheblichen Einfluss auf das Budget haben. Von der Absicherung der Baugrube mittels Berliner Verbau bis zur sorgfältigen Planung von Wasserhaltung, Grundwasserabsenkung und Baudrainage – jeder dieser Aspekte trägt dazu bei, das Bauvorhaben auf Kurs zu halten."
+      },
+      {
+        title: "Entwurfsphase",
+        preview: "Kreative und technische Ausarbeitung von Grundrissen, Fassaden und maßgeschneiderten Lösungen.",
+        expanded: "Die Besprechung des Entwurfs umfasst sowohl kreative als auch technische Aspekte. Dazu gehören die Ausarbeitung von Grundrissen und Fassadenplänen sowie die Festlegung von Farben, Klinker- und Putzarten. Wir berücksichtigen dabei die Vorgaben der Bauherren, um eine maßgeschneiderte Lösung zu schaffen.\n\nDie sorgfältige Positionierung des Gebäudes auf dem Grundstück sowie die optimale Anordnung und Ausrichtung der Räume sind von zentraler Bedeutung. Auch die Gestaltung der Nebengebäude, die sinnvolle Möblierung sowie die Integration Ihrer Bestandsmöblierung fließen in den Entwurfsprozess ein, um sowohl ästhetisch ansprechende als auch funktional optimierte Ergebnisse zu erzielen.\n\nZu Beginn präsentieren wir Ihnen einen Vorentwurf, um gemeinsam die richtige Richtung zu bestätigen. Hierbei nutzen wir einfache Renderings, um Ihnen die Fassadengestaltung visuell darzustellen, sowie einen Lageplan, der die Gebäudeposition auf dem Grundstück zeigt. Sobald der Vorentwurf von Ihnen abgesegnet und in einem intensiven Austausch verfeinert wurde, gehen wir zur finalen Ausarbeitung des Entwurfs über."
+      },
+      {
+        title: "Interiordesign",
+        preview: "Professionelle Innenraumgestaltung für ästhetische und funktionale Raumkonzepte durch unsere Expertin.",
+        expanded: "Innerhalb unserer umfassenden Planungsvereinbarung haben wir bewusst Raum für die exzellenten Dienstleistungen unserer erfahrenen Interiordesignerin geschaffen. Wir verstehen, dass die Gestaltung der Innenräume genauso bedeutend ist wie die äußere Architektur. Aus diesem Grund bieten wir Ihnen einen umfassenden Ansatz, der sowohl ästhetische als auch funktionale Aspekte Ihrer Räumlichkeiten berücksichtigt.\n\nIm Rahmen dieser Vereinbarung möchten wir Sie besonders auf unser einzigartiges Angebot hinweisen. Dieses beinhaltet ein sorgfältig zusammengestelltes Moodboard, das drei Räume Ihrer Wahl umfasst. Die Kreation dieses Moodboards wird von unserer erfahrenen Interior Designerin, Kristina Krause, geleitet. Mit ihrem reichen Erfahrungsschatz und ihrem ausgeprägten Gespür für Ästhetik schafft sie inspirierende Konzepte, die die individuelle Persönlichkeit Ihrer Räumlichkeiten hervorheben.\n\nDie vorgestellten Räume können vielfältig sein, von Wohnzimmern über Schlafzimmer bis hin zu Home-Offices. Die ausgewählten Elemente – Farbpaletten, Materialien, Textilien und Möbelstücke – werden auf dem Moodboard harmonisch zusammengeführt, um Ihnen einen realistischen Vorgeschmack auf die künftige Gestaltung zu geben."
+      },
+      {
+        title: "Angebotsanfrage der Netzwerkpartner",
+        preview: "Konkrete Kostenschätzungen und detaillierte Angebote von vertrauenswürdigen Fachpartnern.",
+        expanded: "Die Angebotsanfrage an unsere oder von Ihnen präferierte Netzwerkpartner ist ein entscheidender Schritt in unserem ganzheitlichen Planungsprozess. Nachdem der Entwurf Ihres Projekts sorgfältig ausgearbeitet wurde, initiieren wir den Prozess, um konkrete Kostenschätzungen und Angebote von denjenigen Fachleuten einzuholen, die in spezifischen Gewerken und Bereichen unser Vertrauen genießen.\n\nGemeinsam erarbeiten wir mithilfe unserer Architektur-Baubeschreibung oder unserer standardisierten Baubeschreibung ein sogenanntes Anforderungsprofil. In diesem Prozess definieren wir die spezifischen Qualitäten des Bauvorhabens. Dies umfasst unter anderem die Typologie des Gebäudes, die Größe in Grund- und Wohnfläche, die Gestaltung der Fassade, die Charakteristika von Fenstern und Innentüren, die Auswahl der Bodenbeläge, die Ausstattung der sanitären Anlagen sowie die Entscheidung für einen Keller oder Teilkeller.\n\nWir identifizieren die Schlüsselbereiche, in denen unsere Netzwerkpartner ihre Expertise einbringen können, sei es im Bereich der Bauausführung, der Materialbeschaffung oder anderer notwendiger Dienstleistungen. Die Entwürfe und Spezifikationen, die wir entwickelt haben, werden den Netzwerkpartnern zur Verfügung gestellt, um genaue Angebote zu erstellen."
+      },
+      {
+        title: "Bauantragsplanung",
+        preview: "Professionelle Erstellung und Einreichung aller erforderlichen Unterlagen für die Baugenehmigung.",
+        expanded: "Die Phase der Genehmigungsplanung knüpft nahtlos an die bisherigen Stufen an. Die bereits entwickelten Entwürfe dienen als Grundlage, um die notwendigen Genehmigungen für das Bauprojekt einzuholen. Hierbei werden die Ergebnisse des Vorentwurfs in Plänen verarbeitet, die den Anforderungen der Baubehörden gerecht werden.\n\nDies umfasst die Einreichung von geforderten Formularen, Berechnungen und Bauplänen, um den Antrag für die Baugenehmigung zu stellen. Die Erstellung, Bearbeitung und Einreichung der erforderlichen Unterlagen erfolgt in Zusammenarbeit mit anderen Fachexperten, die an der Planung beteiligt sind.\n\nDie Planungsunterlagen, Beschreibungen und Berechnungen werden vervollständigt und angepasst, um den Anforderungen gerecht zu werden. Die Zusammenarbeit mit Experten für Entwässerung, Freiflächen, Grünflächen, Statik, Wärmeschutz und Prüfstatik wird separat organisiert und abgerechnet. Hierbei stehen wir Ihnen gerne zur Seite und stellen Ihnen unser Netzwerk zur Verfügung.\n\nUnser erweitertes Leistungsspektrum umfasst nicht nur unsere Kernkompetenzen, sondern auch spezialisierte Fachbereiche, um Ihren individuellen Anforderungen umfassend gerecht zu werden. Die Ausführungsplanung gewährleistet, dass Ihr Projekt gemäß höchster Standards realisiert wird, was zu einem erfolgreichen und qualitativ hochwertigen Bauvorhaben führt."
+      }
     ];
 
     const cardEls = [];
+    let currentExpandedCard = null;
+
     function getCardPositions() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const totalHeight = container.scrollHeight || vh * 4;
-      const minTop = vh * 0.2;
-      const maxTop = totalHeight - vh * 0.2;
+      const totalHeight = container.scrollHeight || vh * 6;
+      const minTop = vh * 0.15;
+      const maxTop = totalHeight - vh * 0.15;
+      
       return content.map((_, i) => {
-        const y = minTop + (i / (content.length - 1)) * (maxTop - minTop);
-        const x = (i % 2 ? vw * 0.7 : vw * 0.3);
+        const progress = i / (content.length - 1);
+        const y = minTop + progress * (maxTop - minTop);
+        
+        // More dynamic positioning based on screen size
+        let x;
+        if (vw <= 768) {
+          x = vw * 0.5; // Center on mobile
+        } else {
+          x = (i % 2 ? vw * 0.75 : vw * 0.25);
+        }
+        
         return { x, y };
       });
     }
@@ -184,31 +339,147 @@
     function createCards(cardPositions) {
       cardEls.length = 0;
       document.querySelectorAll('.card-step').forEach(el => el.remove());
-      content.forEach((text, i) => {
+      
+      content.forEach((item, i) => {
         const pos = cardPositions[i];
         if (!pos) return;
+        
         const cardWrap = document.createElement('div');
         cardWrap.className = 'card-step';
-        cardWrap.innerHTML = `<div class='card'><h3>Schritt ${i + 1}</h3><p>${text}</p></div>`;
+        cardWrap.innerHTML = `
+          <div class='card'>
+            <div class="close-hint">×</div>
+            <h3>${item.title}</h3>
+            <p class="card-preview">${item.preview}</p>
+            <div class="card-expanded-content">
+              ${item.expanded.split('\n\n').map(p => `<p>${p}</p>`).join('')}
+            </div>
+            <div class="expand-hint">mehr...</div>
+          </div>
+        `;
+        
         cardWrap.style.left = `${pos.x}px`;
         cardWrap.style.top = `${pos.y}px`;
         container.appendChild(cardWrap);
         cardEls.push(cardWrap);
-        cardWrap.addEventListener('click', () => {
-          overlayContent.innerHTML = `<h2>Schritt ${i + 1}</h2><p>${text}</p>`;
-          overlay.style.display = 'flex';
+        
+        const card = cardWrap.querySelector('.card');
+        const expandedContent = cardWrap.querySelector('.card-expanded-content');
+        const closeHint = cardWrap.querySelector('.close-hint');
+        
+        function toggleCard() {
+          if (currentExpandedCard && currentExpandedCard !== cardWrap) {
+            closeCard(currentExpandedCard);
+          }
+          
+          if (cardWrap.classList.contains('expanded')) {
+            closeCard(cardWrap);
+            // Scroll to next card after closing
+            setTimeout(() => scrollToNextCard(i), 300);
+          } else {
+            expandCard(cardWrap, pos);
+          }
+        }
+        
+        cardWrap.addEventListener('click', toggleCard);
+        closeHint.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleCard();
         });
       });
     }
 
-    overlay.addEventListener('click', () => overlay.style.display = 'none');
+    function expandCard(cardWrap, pos) {
+      if (currentExpandedCard) {
+        closeCard(currentExpandedCard);
+      }
+      
+      const card = cardWrap.querySelector('.card');
+      const expandedContent = cardWrap.querySelector('.card-expanded-content');
+      
+      cardWrap.classList.add('expanded');
+      card.classList.add('expanded');
+      
+      setTimeout(() => {
+        expandedContent.classList.add('show');
+        // Center the card after content is shown and card has expanded
+        centerCardInViewport(cardWrap);
+      }, 200);
+      
+      currentExpandedCard = cardWrap;
+    }
+
+    function closeCard(cardWrap) {
+      const card = cardWrap.querySelector('.card');
+      const expandedContent = cardWrap.querySelector('.card-expanded-content');
+      
+      expandedContent.classList.remove('show');
+      
+      setTimeout(() => {
+        cardWrap.classList.remove('expanded');
+        card.classList.remove('expanded');
+      }, 100);
+      
+      currentExpandedCard = null;
+    }
+
+    function centerCardInViewport(cardWrap) {
+      // Wait a bit for the card to fully expand
+      setTimeout(() => {
+        const rect = cardWrap.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const cardHeight = rect.height;
+        
+        // Calculate how much we need to scroll to center the card
+        const cardCenter = rect.top + (cardHeight / 2);
+        const viewportCenter = viewportHeight / 2;
+        const scrollOffset = cardCenter - viewportCenter;
+        
+        // Only scroll if the card is not fully visible or not centered
+        if (scrollOffset !== 0) {
+          scrollWrapper.scrollBy({
+            top: scrollOffset,
+            behavior: 'smooth'
+          });
+        }
+      }, 300);
+    }
+
+    function scrollToNextCard(currentIndex) {
+      const nextIndex = (currentIndex + 1) % content.length;
+      const nextCard = cardEls[nextIndex];
+      if (nextCard) {
+        const rect = nextCard.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const targetTop = (viewportHeight - rect.height) / 2;
+        const scrollOffset = rect.top - targetTop;
+        
+        scrollWrapper.scrollBy({
+          top: scrollOffset,
+          behavior: 'smooth'
+        });
+      }
+    }
 
     function drawPath(cardPositions) {
       if (!cardPositions.length) return;
+      
       let d = `M${cardPositions[0].x},${cardPositions[0].y}`;
+      
       for (let i = 1; i < cardPositions.length; i++) {
-        d += ` L${cardPositions[i].x},${cardPositions[i].y}`;
+        const prev = cardPositions[i - 1];
+        const curr = cardPositions[i];
+        
+        // Create smooth curves
+        const midY = prev.y + (curr.y - prev.y) * 0.5;
+        const cp1x = prev.x;
+        const cp1y = midY;
+        const cp2x = curr.x;
+        const cp2y = midY;
+        
+        d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${curr.x},${curr.y}`;
       }
+      
       pathEl.setAttribute('d', d);
     }
 
@@ -216,7 +487,8 @@
       const vh = window.innerHeight;
       cardEls.forEach(card => {
         const rect = card.getBoundingClientRect();
-        card.style.opacity = rect.top < vh * 0.9 && rect.bottom > vh * 0.1 ? 1 : 0;
+        const isVisible = rect.top < vh * 0.85 && rect.bottom > vh * 0.15;
+        card.style.opacity = isVisible ? 1 : 0;
       });
     }
 
@@ -253,8 +525,10 @@
         end: "bottom bottom",
         scrub: 1,
         onUpdate: self => {
-          pathEl.style.strokeDashoffset = length * (1 - self.progress);
-          const pt = pathEl.getPointAtLength(length * self.progress);
+          const progress = self.progress;
+          pathEl.style.strokeDashoffset = length * (1 - progress);
+          
+          const pt = pathEl.getPointAtLength(length * progress);
           dot.setAttribute('cx', pt.x);
           dot.setAttribute('cy', pt.y);
         }
@@ -267,6 +541,8 @@
     scrollWrapper.addEventListener('scroll', setCardVisibility);
     window.addEventListener('resize', updateEverything);
     window.addEventListener('load', updateEverything);
+    
+    // Initialize
     setTimeout(updateEverything, 100);
   </script>
 </body>
