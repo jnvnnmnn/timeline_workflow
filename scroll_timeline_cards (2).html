@@ -368,16 +368,20 @@
         const closeHint = cardWrap.querySelector('.close-hint');
         
         function toggleCard() {
+          // Wenn die Karte bereits expanded ist, gehe zur nächsten Karte
+          if (cardWrap.classList.contains('expanded')) {
+            closeCard(cardWrap);
+            scrollToNextCard(i);
+            return;
+          }
+          
+          // Wenn eine andere Karte offen ist, schließe sie erst
           if (currentExpandedCard && currentExpandedCard !== cardWrap) {
             closeCard(currentExpandedCard);
-            setTimeout(() => expandCard(cardWrap, pos), 200);
-          } else if (cardWrap.classList.contains('expanded')) {
-            closeCard(cardWrap);
-            // Go to next card immediately after closing
-            setTimeout(() => scrollToNextCard(i), 200);
-          } else {
-            expandCard(cardWrap, pos);
           }
+          
+          // Öffne diese Karte
+          expandCard(cardWrap, pos);
         }
         
         cardWrap.addEventListener('click', toggleCard);
@@ -389,27 +393,23 @@
     }
 
     function expandCard(cardWrap, pos) {
-      if (currentExpandedCard) {
-        closeCard(currentExpandedCard);
-      }
-      
-      // First center the card BEFORE expanding
-      centerCardInViewport(cardWrap);
-      
       const card = cardWrap.querySelector('.card');
       const expandedContent = cardWrap.querySelector('.card-expanded-content');
       
-      // Then expand after a short delay
+      // Schritt 1: Karte ins Zentrum bewegen
+      centerCardInViewport(cardWrap);
+      
+      // Schritt 2: Nach dem Zentrieren die Karte erweitern
       setTimeout(() => {
         cardWrap.classList.add('expanded');
         card.classList.add('expanded');
         
+        // Schritt 3: Content anzeigen und nochmal zentrieren
         setTimeout(() => {
           expandedContent.classList.add('show');
-          // Center again after expansion in case height changed
           centerCardInViewport(cardWrap);
-        }, 200);
-      }, 300);
+        }, 100);
+      }, 400);
       
       currentExpandedCard = cardWrap;
     }
@@ -418,12 +418,14 @@
       const card = cardWrap.querySelector('.card');
       const expandedContent = cardWrap.querySelector('.card-expanded-content');
       
+      // Content ausblenden
       expandedContent.classList.remove('show');
       
+      // Karte schließen
       setTimeout(() => {
         cardWrap.classList.remove('expanded');
         card.classList.remove('expanded');
-      }, 100);
+      }, 50);
       
       currentExpandedCard = null;
     }
@@ -446,18 +448,18 @@
     }
 
     function scrollToNextCard(currentIndex) {
+      // Bestimme die nächste Karte
       const nextIndex = (currentIndex + 1) % content.length;
       const nextCard = cardEls[nextIndex];
+      
       if (nextCard) {
-        const rect = nextCard.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const targetTop = (viewportHeight - rect.height) / 2;
-        const scrollOffset = rect.top - targetTop;
+        // Zentriere die nächste Karte sofort
+        centerCardInViewport(nextCard);
         
-        scrollWrapper.scrollBy({
-          top: scrollOffset,
-          behavior: 'smooth'
-        });
+        // Erweitere die nächste Karte nach dem Zentrieren
+        setTimeout(() => {
+          expandCard(nextCard, getCardPositions()[nextIndex]);
+        }, 400);
       }
     }
 
