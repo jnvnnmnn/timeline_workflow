@@ -42,7 +42,7 @@
     .timeline-container {
       position: relative;
       width: 100vw;
-      min-height: 600vh;
+      min-height: 400vh;
       background: #0f0f10;
     }
 
@@ -222,7 +222,7 @@
       }
 
       .timeline-container {
-        min-height: 700vh;
+        min-height: 450vh;
       }
     }
 
@@ -348,9 +348,9 @@
     function getCardPositions() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const totalHeight = container.scrollHeight || vh * 6;
-      const minTop = vh * 0.15;
-      const maxTop = totalHeight - vh * 0.15;
+      const totalHeight = container.scrollHeight || vh * 4;
+      const minTop = vh * 0.1;
+      const maxTop = totalHeight - vh * 0.1;
       
       return content.map((_, i) => {
         const progress = i / (content.length - 1);
