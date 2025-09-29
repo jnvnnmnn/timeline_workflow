@@ -42,7 +42,7 @@
     .timeline-container {
       position: relative;
       width: 100vw;
-      min-height: 400vh;
+      min-height: 300vh;
       background: transparent;
     }
 
@@ -222,7 +222,7 @@
       }
 
       .timeline-container {
-        min-height: 450vh;
+        min-height: 350vh;
       }
     }
 
@@ -348,9 +348,9 @@
     function getCardPositions() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const totalHeight = container.scrollHeight || vh * 4;
-      const minTop = vh * 0.1;
-      const maxTop = totalHeight - vh * 0.1;
+      const totalHeight = container.scrollHeight || vh * 3;
+      const minTop = vh * 0.05;
+      const maxTop = totalHeight - vh * 0.2;
       
       return content.map((_, i) => {
         const progress = i / (content.length - 1);
@@ -405,7 +405,10 @@
           
           if (cardWrap.classList.contains('expanded')) {
             closeCard(cardWrap);
-            setTimeout(() => scrollToNextCard(i), 300);
+            // Nur zur nächsten Karte scrollen wenn es nicht die letzte ist
+            if (i < content.length - 1) {
+              setTimeout(() => scrollToNextCard(i), 300);
+            }
           } else {
             expandCard(cardWrap, pos);
           }
@@ -462,32 +465,59 @@
         const viewportHeight = window.innerHeight;
         const cardHeight = rect.height;
         
-        const cardCenter = rect.top + (cardHeight / 2);
-        const viewportCenter = viewportHeight / 2;
-        const scrollOffset = cardCenter - viewportCenter;
-        
-        if (scrollOffset !== 0) {
-          scrollWrapper.scrollBy({
-            top: scrollOffset,
-            behavior: 'smooth'
-          });
+        // Für Mobile: zur oberen Kante scrollen
+        if (isMobile()) {
+          const scrollOffset = rect.top - 50;
+          if (Math.abs(scrollOffset) > 10) {
+            scrollWrapper.scrollBy({
+              top: scrollOffset,
+              behavior: 'smooth'
+            });
+          }
+        } else {
+          // Für Desktop: zur Mitte scrollen
+          const cardCenter = rect.top + (cardHeight / 2);
+          const viewportCenter = viewportHeight / 2;
+          const scrollOffset = cardCenter - viewportCenter;
+          
+          if (Math.abs(scrollOffset) > 10) {
+            scrollWrapper.scrollBy({
+              top: scrollOffset,
+              behavior: 'smooth'
+            });
+          }
         }
       }, 300);
     }
 
     function scrollToNextCard(currentIndex) {
-      const nextIndex = (currentIndex + 1) % content.length;
-      const nextCard = cardEls[nextIndex];
-      if (nextCard) {
-        const rect = nextCard.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const targetTop = (viewportHeight - rect.height) / 2;
-        const scrollOffset = rect.top - targetTop;
-        
-        scrollWrapper.scrollBy({
-          top: scrollOffset,
-          behavior: 'smooth'
-        });
+      if (currentIndex < content.length - 1) {
+        const nextIndex = currentIndex + 1;
+        const nextCard = cardEls[nextIndex];
+        if (nextCard) {
+          setTimeout(() => {
+            const rect = nextCard.getBoundingClientRect();
+            
+            if (isMobile()) {
+              // Mobile: zur oberen Kante der nächsten Karte
+              const scrollOffset = rect.top - 50;
+              scrollWrapper.scrollBy({
+                top: scrollOffset,
+                behavior: 'smooth'
+              });
+            } else {
+              // Desktop: zur Mitte der nächsten Karte
+              const viewportHeight = window.innerHeight;
+              const targetTop = (viewportHeight - rect.height) / 2;
+              const scrollOffset = rect.top - targetTop;
+              
+              scrollWrapper.scrollBy({
+                top: scrollOffset,
+                behavior: 'smooth'
+              });
+            }
+          }, 100);
+        }
       }
     }
 
@@ -556,34 +586,4 @@
         onUpdate: self => {
           const progress = self.progress;
           pathEl.style.strokeDashoffset = length * (1 - progress);
-          
-          const pt = pathEl.getPointAtLength(length * progress);
-          dot.setAttribute('cx', pt.x);
-          dot.setAttribute('cy', pt.y);
-        }
-      });
-
-      ScrollTrigger.refresh();
-      setCardVisibility();
-    }
-
-    scrollWrapper.addEventListener('scroll', setCardVisibility);
-    window.addEventListener('resize', updateEverything);
-    window.addEventListener('load', updateEverything);
-    
-    // Initialisierung
-    setTimeout(updateEverything, 100);
-    setTimeout(sendHeightToParent, 500);
-
-    // Handle messages from parent
-    window.addEventListener('message', (event) => {
-      if (event.data.type === 'scroll') {
-        scrollWrapper.scrollTo({
-          top: event.data.position,
-          behavior: 'smooth'
-        });
-      }
-    });
-  </script>
-</body>
-</html>
+       
