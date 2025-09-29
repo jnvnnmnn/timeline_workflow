@@ -9,19 +9,11 @@
     html, body {
       margin: 0;
       padding: 0;
-      height: auto;
+      height: 90%;
       font-family: 'Work Sans', sans-serif;
       background: transparent;
       color: #fff;
-      overflow-x: hidden;
-      overflow-y: hidden;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-
-    html::-webkit-scrollbar,
-    body::-webkit-scrollbar {
-      display: none;
+      overflow: hidden;
     }
 
     .scroll-wrapper {
@@ -42,7 +34,6 @@
       position: relative;
       width: 100vw;
       min-height: 450vh;
-      background: transparent;
     }
 
     .timeline-svg {
@@ -77,10 +68,6 @@
       cursor: pointer;
       transform: translate(-50%, 0);
       transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .card-step.visible {
-      opacity: 1;
     }
 
     .card-step.expanded {
@@ -188,6 +175,8 @@
     .close-hint:hover {
       opacity: 1 !important;
     }
+
+
 
     @keyframes fadeInUp {
       from {
@@ -324,40 +313,21 @@
     const cardEls = [];
     let currentExpandedCard = null;
 
-    // Iframe communication
-    function sendHeightToParent() {
-      if (window.parent && window.parent !== window) {
-        const height = Math.max(
-          document.body.scrollHeight,
-          document.documentElement.scrollHeight,
-          container.scrollHeight + 100
-        );
-        
-        window.parent.postMessage({
-          type: 'resize',
-          height: height
-        }, '*');
-      }
-    }
-
-    function isMobile() {
-      return window.innerWidth <= 768;
-    }
-
     function getCardPositions() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const totalHeight = container.scrollHeight || vh * 4.5;
-      const minTop = vh * 0.1;
-      const maxTop = totalHeight - vh * 0.15;
+      const minTop = vh * 0.12;
+      const maxTop = totalHeight - vh * 0.12;
       
       return content.map((_, i) => {
         const progress = i / (content.length - 1);
         const y = minTop + progress * (maxTop - minTop);
         
+        // More dynamic positioning based on screen size
         let x;
         if (vw <= 768) {
-          x = vw * 0.5;
+          x = vw * 0.5; // Center on mobile
         } else {
           x = (i % 2 ? vw * 0.75 : vw * 0.25);
         }
@@ -404,13 +374,8 @@
           
           if (cardWrap.classList.contains('expanded')) {
             closeCard(cardWrap);
-            // Mobile: zur oberen Karte scrollen
-            if (isMobile()) {
-              setTimeout(() => scrollToCardTop(cardWrap), 300);
-            } else {
-              // Desktop: zur nächsten Karte scrollen
-              setTimeout(() => scrollToNextCard(i), 300);
-            }
+            // Scroll to next card after closing
+            setTimeout(() => scrollToNextCard(i), 300);
           } else {
             expandCard(cardWrap, pos);
           }
@@ -422,8 +387,6 @@
           toggleCard();
         });
       });
-      
-      setTimeout(sendHeightToParent, 100);
     }
 
     function expandCard(cardWrap, pos) {
@@ -439,8 +402,8 @@
       
       setTimeout(() => {
         expandedContent.classList.add('show');
+        // Center the card after content is shown and card has expanded
         centerCardInViewport(cardWrap);
-        setTimeout(sendHeightToParent, 300);
       }, 200);
       
       currentExpandedCard = cardWrap;
@@ -455,51 +418,29 @@
       setTimeout(() => {
         cardWrap.classList.remove('expanded');
         card.classList.remove('expanded');
-        setTimeout(sendHeightToParent, 100);
       }, 100);
       
       currentExpandedCard = null;
     }
 
     function centerCardInViewport(cardWrap) {
+      // Wait a bit for the card to fully expand
       setTimeout(() => {
         const rect = cardWrap.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
         const cardHeight = rect.height;
         
-        // Für Mobile: zur oberen Kante scrollen
-        if (isMobile()) {
-          const scrollOffset = rect.top - 20;
-          if (Math.abs(scrollOffset) > 10) {
-            scrollWrapper.scrollBy({
-              top: scrollOffset,
-              behavior: 'smooth'
-            });
-          }
-        } else {
-          // Für Desktop: zur Mitte scrollen
-          const cardCenter = rect.top + (cardHeight / 2);
-          const viewportCenter = viewportHeight / 2;
-          const scrollOffset = cardCenter - viewportCenter;
-          
-          if (Math.abs(scrollOffset) > 10) {
-            scrollWrapper.scrollBy({
-              top: scrollOffset,
-              behavior: 'smooth'
-            });
-          }
-        }
+        // Calculate how much we need to scroll to center the card
+        const cardCenter = rect.top + (cardHeight / 2);
+        const viewportCenter = viewportHeight / 2;
+        const scrollOffset = cardCenter - viewportCenter;
+        
+        // Always scroll to center the card
+        scrollWrapper.scrollBy({
+          top: scrollOffset,
+          behavior: 'smooth'
+        });
       }, 300);
-    }
-
-    function scrollToCardTop(cardWrap) {
-      const rect = cardWrap.getBoundingClientRect();
-      const scrollOffset = rect.top - 20;
-      
-      scrollWrapper.scrollBy({
-        top: scrollOffset,
-        behavior: 'smooth'
-      });
     }
 
     function scrollToNextCard(currentIndex) {
@@ -527,6 +468,7 @@
         const prev = cardPositions[i - 1];
         const curr = cardPositions[i];
         
+        // Create smooth curves
         const midY = prev.y + (curr.y - prev.y) * 0.5;
         const cp1x = prev.x;
         const cp1y = midY;
@@ -598,19 +540,8 @@
     window.addEventListener('resize', updateEverything);
     window.addEventListener('load', updateEverything);
     
-    // Initialisierung
+    // Initialize
     setTimeout(updateEverything, 100);
-    setTimeout(sendHeightToParent, 500);
-
-    // Handle messages from parent
-    window.addEventListener('message', (event) => {
-      if (event.data.type === 'scroll') {
-        scrollWrapper.scrollTo({
-          top: event.data.position,
-          behavior: 'smooth'
-        });
-      }
-    });
   </script>
 </body>
 </html>
