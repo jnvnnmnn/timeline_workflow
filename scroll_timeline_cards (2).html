@@ -370,12 +370,11 @@
         function toggleCard() {
           if (currentExpandedCard && currentExpandedCard !== cardWrap) {
             closeCard(currentExpandedCard);
-          }
-          
-          if (cardWrap.classList.contains('expanded')) {
+            setTimeout(() => expandCard(cardWrap, pos), 200);
+          } else if (cardWrap.classList.contains('expanded')) {
             closeCard(cardWrap);
-            // Scroll to next card after closing
-            setTimeout(() => scrollToNextCard(i), 300);
+            // Go to next card immediately after closing
+            setTimeout(() => scrollToNextCard(i), 200);
           } else {
             expandCard(cardWrap, pos);
           }
@@ -394,17 +393,23 @@
         closeCard(currentExpandedCard);
       }
       
+      // First center the card BEFORE expanding
+      centerCardInViewport(cardWrap);
+      
       const card = cardWrap.querySelector('.card');
       const expandedContent = cardWrap.querySelector('.card-expanded-content');
       
-      cardWrap.classList.add('expanded');
-      card.classList.add('expanded');
-      
+      // Then expand after a short delay
       setTimeout(() => {
-        expandedContent.classList.add('show');
-        // Center the card after content is shown and card has expanded
-        centerCardInViewport(cardWrap);
-      }, 200);
+        cardWrap.classList.add('expanded');
+        card.classList.add('expanded');
+        
+        setTimeout(() => {
+          expandedContent.classList.add('show');
+          // Center again after expansion in case height changed
+          centerCardInViewport(cardWrap);
+        }, 200);
+      }, 300);
       
       currentExpandedCard = cardWrap;
     }
@@ -424,23 +429,20 @@
     }
 
     function centerCardInViewport(cardWrap) {
-      // Wait a bit for the card to fully expand
-      setTimeout(() => {
-        const rect = cardWrap.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const cardHeight = rect.height;
-        
-        // Calculate how much we need to scroll to center the card
-        const cardCenter = rect.top + (cardHeight / 2);
-        const viewportCenter = viewportHeight / 2;
-        const scrollOffset = cardCenter - viewportCenter;
-        
-        // Only scroll if the card is not fully visible or not centered
-        scrollWrapper.scrollBy({
-          top: scrollOffset,
-          behavior: 'smooth'
-        });
-      }, 300);
+      const rect = cardWrap.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const cardHeight = rect.height;
+      
+      // Calculate how much we need to scroll to center the card
+      const cardCenter = rect.top + (cardHeight / 2);
+      const viewportCenter = viewportHeight / 2;
+      const scrollOffset = cardCenter - viewportCenter;
+      
+      // Always scroll to center the card
+      scrollWrapper.scrollBy({
+        top: scrollOffset,
+        behavior: 'smooth'
+      });
     }
 
     function scrollToNextCard(currentIndex) {
